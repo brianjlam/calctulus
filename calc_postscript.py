@@ -13,12 +13,14 @@ beginningPostscriptSyntax = "%!PS-Adobe-3.0 EPSF-3.0\n%%BoundingBox: 0 0 " \
                              + str(page_width*72) + " " + str(page_height*72) + "\n/Times-Roman findfont\n12 scalefont\nsetfont\n"
 
 #write functions here
-def trunk_left(y):
+def leftx(y):
     return -2 + .15 * cos(y) + .5 * cos(.3 * y)
-def trunk_right(y):
+def rightx(y):
     return  3 + .15 * sin(y) + .5 * cos(.3 * y)
+
+#gives width based on left and right bounding functions
 def width(y):
-    return int(72 * (trunk_right(y) - trunk_left(y)))
+    return int(72 * rightx(y) - leftx(y)))
 def altitude(y):
     return int(width(y) / (2 + 2**0.5))
 def side(y):
@@ -85,7 +87,3 @@ def create_ps(dx, start, stop, tilesize):
     return text
 
 print create_ps(0.25, 0, 20, 5.5)
-
-
-
-
