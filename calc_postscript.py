@@ -14,13 +14,13 @@ beginningPostscriptSyntax = "%!PS-Adobe-3.0 EPSF-3.0\n%%BoundingBox: 0 0 " \
 
 #write functions here
 def leftx(y):
-    return -2 + .15 * cos(y) + .5 * cos(.3 * y)
+    return (-((8.7 - y)*10**7)**0.1)
 def rightx(y):
-    return  3 + .15 * sin(y) + .5 * cos(.3 * y)
+    return ((8.7 - y)*10**7)**0.1
 
 #gives width based on left and right bounding functions
 def width(y):
-    return int(72 * rightx(y) - leftx(y)))
+    return int(72*(rightx(y) - leftx(y)))
 def altitude(y):
     return int(width(y) / (2 + 2**0.5))
 def side(y):
@@ -65,6 +65,27 @@ def make_octagon(y, x_pos, y_pos):
     text += text + "newpath\n%s %s moveto\n(y=%s) show\n" % (x_pos, y_pos, y)
     return text
 
+def trap_coord(y, vertex_num, x_pos,y_pos):
+    base = width(y)
+    base2offset = 0.5*(1-0.85)*width(y)
+    height = 72*4
+
+    coord_list = {0:str(0    +x_pos) + " " + str(0 +y_pos),\
+                  1:str(base +x_pos) + " " + str(0 +y_pos),\
+                  2:str(base - base2offset + x_pos) + " " + str(height + y_pos),\
+                  3:str(base2offset + x_pos) + " " + str(height + y_pos)}
+    return coord_list[vertex_num]
+
+def make_trapezoid(y, x_pos, y_pos):
+    w = width(y)
+    text = "0.1 setlinewidth\n" + str(trap_coord(y, 0, x_pos, y_pos)) + " newpath moveto\n"
+    for i in range(1, 4):
+        text = text + str(trap_coord(y, i, x_pos, y_pos)) + " lineto\n"
+    text = text + "closepath\n0 setgray\nstroke\n\n"
+    #adds a label to the octagon
+    text += text + "newpath\n%s %s moveto\n(y=%s) show\n" % (x_pos, y_pos-24, y)
+    return text
+
 """
 dx = board thickness
 start = beginning y-value
@@ -73,17 +94,26 @@ tilesize = size of largest octagon
 """
 def create_ps(dx, start, stop, tilesize):
     y = start
-    x_pos = 0
-    y_pos = 0
+    height = 72*4
+    x_start = 12
+    x_pos = x_start
+    y_start = 36
+    y_pos = y_start
     text = beginningPostscriptSyntax
-    while y_pos < 72 * page_height - width(y) and y <= stop:
+    while y_pos < 72 * page_height - height and y <= stop:
         while x_pos < 72 * page_width - width(y) and y <= stop:
-            text = text + make_octagon(y, x_pos, y_pos)
+            text = text + make_trapezoid(y, x_pos, y_pos)
             y += dx
             x_pos += tilesize * 72
-        x_pos = 0
-        y_pos += tilesize * 72
+        x_pos = x_start
+        #y_pos += tilesize * 72
+        y_pos += 4.25 * 72
     text = text + "showpage"
     return text
 
-print create_ps(0.25, 0, 20, 5.5)
+dx = 0.25
+start = 5
+stop = 5
+tilesize = 13.1
+f = open('anger.ps', 'w')
+f.write(create_ps(dx, start, stop, tilesize))
